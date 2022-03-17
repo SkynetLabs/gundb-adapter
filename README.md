@@ -8,6 +8,18 @@ The main [index.js](https://github.com/SkynetLabs/gundb-adapter/blob/main/src/in
 
 # Options
 The adapter specific options are: **Secret**, **Portal**, and **Debug**. **Until** is a GunDB specific option
+```
+var gun = zenbase({
+    // the secret for skynet
+    secret: process.env["SECRET"] || "YOUR_SECRET_HERE", 
+    // the skynet portal
+    portal: process.env["PORTAL"] || "https://siasky.net", 
+    // whether we want additional debug settings on
+    debug: process.env["DEBUG"] || true,
+    // decreases the frequency that gun writes to the storage adapter. See issue here: https://github.com/Fluffy9/Zenbase/issues/1#issuecomment-823504402 
+    until: process.env["UNTIL"] || 2*1000
+}) 
+```
 
 ## Secret 
 This is used to define the seed that SkyDB will use to generate the private and public keys. These keys are used in the `put` and `get` functions GunDB calls to store and retireve data. If it is set to the same thing as someone else, you are able to read and write from the same data. This may be something you want to do if you're running multiple [relays](https://github.com/SkynetLabs/gundb-relay). If you're running a relay and the adatapter client side, you may want to ensure you're using the same secret as the one on the relay. If you want prevent other people from using the same storage as you, you're best off running a relay with a private secret.
@@ -24,18 +36,7 @@ Any errors will be logged as well.
 ## Until
 Because GunDB is very quick, it can overwhelm SkyDB. This leads to laggy data or lost data. `until` is the amount of time in milliseconds that GunDB will wait before it sends a batch of data to the adapter. It is recommended to set it at 2000 milliseconds (2 seconds) to give SkyDB plenty of time to react.
 
-```
-var gun = zenbase({
-    // the secret for skynet
-    secret: process.env["SECRET"] || "YOUR_SECRET_HERE", 
-    // the skynet portal
-    portal: process.env["PORTAL"] || "https://siasky.net", 
-    // whether we want additional debug settings on
-    debug: process.env["DEBUG"] || true,
-    // decreases the frequency that gun writes to the storage adapter. See issue here: https://github.com/Fluffy9/Zenbase/issues/1#issuecomment-823504402 
-    until: process.env["UNTIL"] || 2*1000
-}) 
-```
+
 # Verification
 With debugging on, the logs will print the key and data that it sent to skynet. The secret option is the seed used to generate the public key and private key from Skydb. With all three it's possible to retrieve the skynet link of the data that was stored.
 ![Capture3](https://user-images.githubusercontent.com/29765579/158858083-688b48f7-7d9c-4f9f-a752-437ccd6f17bf.PNG)
