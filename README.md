@@ -1,155 +1,41 @@
-# Zenbase 🎍
-Welcome to Zenbase, the all encompassing database. It's a secure home for your data that lives in the cloud. 
-## About Zenbase
-Zenbase is: 
-* Decentralized, peer to peer
-* Fault tolerant
-* Offline first
-* Private
-* Realtime
-* Cross platform. It runs on browsers, and mobile devices. (Servers coming soon!)
-* Auth ready. Decentralized authentication is built in
-* Graph database
-* Persistent
-* Easy to use
+# Gundb Adapter
+An adapter for GunDB using Skynet
 
-## HOW???
-That was a long list of super awesome features. Basically, Zenbase combines two awesome technologies: [GunDB]("https://gun.eco/") and [Sia SkynetDB]("https://siasky.net/"). GunDB is a Graph database based on WebRTC. Sia SkynetDB is a decentralized Key/Value pair database on a decentralized storage layer. 
+# How it works
+When GunDB wants to save data, it will call the `put` function on the [adapter](https://github.com/SkynetLabs/gundb-adapter/blob/main/src/index.js). This is basically a simple wrapper around SkyDB's `setJSON` endpoint. Likewise, when GunDB wants to retrieve data, it will call the `get` function on the adapter. This is basically a simple wrapper around SkyDB's `getJSON` endpoint. Additional logging and error handling functions were also added. These can be enabled by passing in the option `debug = true`. This adapter can be used both client-side and server-side. On the client, it allows you to use Skynet to persist data without a relay. On the server, it can be used together with a relay to save data from it's peers. 
 
-GunDB offers a flexible database, but lacks decentralized persistence. Centralized relays like S3 or a server are used to persist your data when WebRTC fails. 
+The main [index.js](https://github.com/SkynetLabs/gundb-adapter/blob/main/src/index.js) contains all the functionality. The rest are dependencies, configuration and npm package related. This library is most easily used in the form of an [npm package](https://www.npmjs.com/package/skynet-adapter)
 
-Sia SkynetDB has decentralized persistence, but lacks most of the features you'd probably want in a database (like relationships and queries). 
+# Options
+The adapter specific options are: **Secret**, **Portal**, and **Debug**. **Until** is a GunDB specific option
 
-Zenbase bridges these with a storage adapter for GunDB that persists data to Skynet. 
+## Secret 
+This is used to define the seed that SkyDB will use to generate the private and public keys. These keys are used in the `put` and `get` functions GunDB calls to store and retireve data. If it is set to the same thing as someone else, you are able to read and write from the same data. This may be something you want to do if you're running multiple [relays](https://github.com/SkynetLabs/gundb-relay). If you're running a relay and the adatapter client side, you may want to ensure you're using the same secret as the one on the relay. If you want prevent other people from using the same storage as you, you're best off running a relay with a private secret.
 
-## Why Should I Care
-1. It's free / cheaper than you're currently paying for your database. As of November 2020, Sia SkynetDB storage is free. It's unclear when/if that will change but you can expect that it will be cheap if payment is required. Storage on the Sia network currently costs:
+## Portal
+This determines which skynet portal to use
 
-* 3.02 dollars a month per terabyte for storage 
-* 0.62 dollars a terabyte for upload bandwidth
-* 1.06 dollars a terabyte for download bandwidth
+## Debug
+This turns on logging for all data uploaded to skynet, and all errors. It also has debugger statements for easy debugging. When sending data to skynet, it will log `[put]` + `Key: the key` + `Data: json data`.
+This is the key used to retrieve the data from SkyDB, and whatever json data GunDB generates. Likewise with getting data from skynet, it will log `[get]` + `Key: the key` + `Data: json data`. This is the key used to store the data in SkyDB, and whatever json data GunDB generated.
 
-[Source]("https://siastats.info/storage_pricing")
+Any errors will be logged as well.
 
-Even assuming higher storage costs for higher duplication / better web availability, you're looking at cents for a 10gb database. Should payment be required, we intend to host a payment gateway to allow you to pay for your Zenbase easily with your credit card
+## Until
+Because GunDB is very quick, it can overwhelm SkyDB. This leads to laggy data or lost data. `until` is the amount of time in milliseconds that GunDB will wait before it sends a batch of data to the adapter. It is recommended to set it at 2000 milliseconds (2 seconds) to give SkyDB plenty of time to react.
 
-2. It's always available. Even the biggest centralized services like AWS have down time. There is good reason to expect that Zenbase won't. Peer devices will each serve as their own database server making your service more available the more people use it. Even if there are no peers, Sia SkynetDB will always be available. There is another 10-30 redundancy on Skynet data, ensuring your data is always close by
-
-3. It's cross platform. You don't need a server to run it so that's one less thing to set up and one less thing to pay for. 
-
-4. It's realtime and fault tolerant. Need I say more? Pinging your database for updates sucks  
-
-5. It's open source! 😁
-
-## Getting Started (v2.1.x)
-Version 2.1.x removes Skynetjs from being bundled with Zenbase. Skynet is providing their own client side bundle. You now need to import both Gun and Skynet before Zenbase. I've also tested it and it works with NodeJS as well
-
-The Interactive tutorial has been updated: https://starboard.gg/nb/nl2QbJ2
-
-```HTML
-<html>
-<head>
-<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/lib/radix.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/lib/radisk.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/lib/store.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/lib/rindexed.js"></script>
-<script src="https://skynet-js.hns.siasky.net/4.0-beta/index.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/zenbase/src/index.js"></script>
-<script>
-let hello_world = ""
-
-// Initialize gun.
-// [localStorage] We are turning localStorage to false for testing purposes. Generally, you'd want that to be true
-// [secret] Secret should be something long and secure. Your data will be saved to Skynet using that secret
-// [portal] Skynet portal you'd like to use. Use a portal you trust or run your own. They could potentially manipulate your data (although I don't see why) 
-// [debug] Show debug output
-// [until] Change the batch time of Gun so that it doesn't attempt to write to storage too quickly
-window.gun = new Gun({
-    localStorage: false,
-    secret: "YOUR_SECRET_HERE",
-    portal: "https://siasky.net",
-    debug: false,
-    until: 2*1000
-})
-
-// Put data into gun. This will store in memory, then localStorage (disabled), then Skynet
-gun.get('hello').put({ name: "world" });
-// Get data into gun. This will pull from memory, then localStorage (disabled), then Skynet
-gun.get('hello').on(data => { 
-  hello_world = data['name']
-	alert("hello: " + hello_world)
-})
-</script>
-</head>
-<body>
-</body>
-</html>
 ```
-
-## Getting Started (Old)
-
-Interactive tutorial here: https://starboard.gg/nb/nl2QbJ2
-
-```HTML
-<html>
-<head>
-<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/lib/radix.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/lib/radisk.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/lib/store.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/lib/rindexed.js"></script>
-<script src="https://unpkg.com/zenbase/dist/main.js"></script>
-<script>
-let hello_world = ""
-
-// Initialize gun.
-// [localStorage] We are turning localStorage to false for testing purposes. Generally, you'd want that to be true
-// [secret] Secret should be something long and secure. Your data will be saved to Skynet using that secret
-// [portal] Skynet portal you'd like to use. Use a portal you trust or run your own. They could potentially manipulate your data (although I don't see why) 
-// [debug] Show debug output
-// [until] Change the batch time of Gun so that it doesn't attempt to write to storage too quickly
-window.gun = new Gun({
-    localStorage: false,
-    secret: "YOUR_SECRET_HERE",
-    portal: "https://siasky.net",
-    debug: false,
-    until: 2*1000
-})
-
-// Put data into gun. This will store in memory, then localStorage (disabled), then Skynet
-gun.get('hello').put({ name: "world" });
-// Get data into gun. This will pull from memory, then localStorage (disabled), then Skynet
-gun.get('hello').on(data => { 
-  hello_world = data['name']
-	alert("hello: " + hello_world)
-})
-</script>
-</head>
-<body>
-</body>
-</html>
+var gun = zenbase({
+    // the secret for skynet
+    secret: process.env["SECRET"] || "YOUR_SECRET_HERE", 
+    // the skynet portal
+    portal: process.env["PORTAL"] || "https://siasky.net", 
+    // whether we want additional debug settings on
+    debug: process.env["DEBUG"] || true,
+    // decreases the frequency that gun writes to the storage adapter. See issue here: https://github.com/Fluffy9/Zenbase/issues/1#issuecomment-823504402 
+    until: process.env["UNTIL"] || 2*1000
+}) 
 ```
-## Donators (In order of contribution)
-```
-🏆 aaronfye
-🥈 griffgreen
-🥉 bit-7
-🎖 julietea
-🎖 slayerizedkoala
-🎖 prometheusminer
-🎖 caipeng2006
-🎖 yaobr
-🎖 traviagio
-🎖 luxebeng
-```
- ... [and more](https://gitcoin.co/grants/1629/zenbase)
-
-
-## Credits
-* GunDB
-* Sia SkynetDB
-
-## More about the project
-
-https://www.indiehackers.com/product/zenbase
+# Verification
+With debugging on, the logs will print the key and data that it sent to skynet. The secret option is the seed used to generate the public key and private key from Skydb. With all three it's possible to retrieve the skynet link of the data that was stored.
+![Capture3](https://user-images.githubusercontent.com/29765579/158858083-688b48f7-7d9c-4f9f-a752-437ccd6f17bf.PNG)
