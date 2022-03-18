@@ -1,7 +1,7 @@
 {
-  "name": "zenbase",
-  "version": "2.1.6",
-  "description": "GunDB storage adapter for Sia SkynetDB",
+  "name": "skynet-gundb-adapter",
+  "version": "1.0.0",
+  "description": "GunDB storage adapter for SkynetDB",
   "main": "src/index.js",
   "files": [
     "src"
@@ -10,7 +10,6 @@
     "type": "git"
   },
   "keywords": [
-    "zenbase",
     "gun",
     "gunDB",
     "graph",
@@ -21,7 +20,7 @@
     "realtime",
     "P2P"
   ],
-  "author": "fluffy9",
+  "author": "skynetlabs",
   "license": "MIT",
   "dependencies": {
     "gun": "^0.2020.1235",
