@@ -31,6 +31,8 @@ This determines which skynet portal to use
 This turns on logging for all data uploaded to skynet, and all errors. It also has debugger statements for easy debugging. When sending data to skynet, it will log `[put]` + `Key: the key` + `Data: json data`.
 This is the key used to retrieve the data from SkyDB, and whatever json data GunDB generates. Likewise with getting data from skynet, it will log `[get]` + `Key: the key` + `Data: json data`. This is the key used to store the data in SkyDB, and whatever json data GunDB generated.
 
+For further documentation on the structure of GunDB data, you can check the documentation [here](https://gun.eco/docs/FAQ#what-is-a-soul-what-does-a-node-look-like)
+
 Any errors will be logged as well.
 
 ## Until
