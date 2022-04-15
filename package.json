@@ -24,7 +24,6 @@
   "license": "MIT",
   "dependencies": {
     "@skynetlabs/skynet-nodejs": "https://github.com/SkynetLabs/nodejs-skynet#refs/heads/in-memory-upload",
-    "gun": "^0.2020.1235",
-    "skynet-js": "^4.0.27-beta"
+    "gun": "^0.2020.1235"
   }
 }
