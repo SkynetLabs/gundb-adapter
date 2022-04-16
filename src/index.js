@@ -42,7 +42,7 @@ function factory(opt) {
     // if the debug setting is on, print the key and the data we're storing to skynet, and pause execution using debugger statement
     if (debug) {
       console.log("[Put] \nKey: " + key + " \nData: ");
-      console.log(JSON.parse(data));
+      // console.log(JSON.parse(data));
       // debugger;
     }
     // if there is data to be stored, pass that data to skynet
@@ -89,8 +89,8 @@ function factory(opt) {
     // if the debug setting is on, print the key we're using to retrieve from skynet, and pause execution using debugger statement
     if (debug) {
       console.log("[Get] \nKey: " + key);
-      console.log("reading from Skylink:", resolverSkylink);
-      debugger;
+      // console.log("reading from Skylink:", resolverSkylink);
+      // debugger;
     }
 
     client
@@ -98,7 +98,7 @@ function factory(opt) {
       .then((res) => {
         if (debug) {
           console.log(`Data Downloaded from ${resolverSkylink}`);
-          console.log(String(res));
+          // console.log(String(res));
         }
 
         // Pass the data back to gun. In the case where the data returned is null or something we'll return undefined
