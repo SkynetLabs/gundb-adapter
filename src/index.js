@@ -47,8 +47,11 @@ function factory(opt) {
     }
     // if there is data to be stored, pass that data to skynet
     if (data) {
+      // converts data from Gun to skydb compatible data format
+      const fullData = '{"_data":'+data+',"_v":2}';
+      //upload fullData to skynet
       client
-        .uploadData(data, key)
+        .uploadData(fullData, key)
         .then((skylink) => {
           if (debug) {
             console.log(`${key} saved to ${skylink}`);
@@ -96,13 +99,15 @@ function factory(opt) {
     client
       .downloadData(resolverSkylink)
       .then((res) => {
+        //convert res from skydb compatible data format to gun data format
+        const result = String(String(res).substring(9)).slice(0, -8);
         if (debug) {
           console.log(`Data Downloaded from ${resolverSkylink}`);
           // console.log(String(res));
         }
 
         // Pass the data back to gun. In the case where the data returned is null or something we'll return undefined
-        cb(null, res || undefined);
+        cb(null, result || undefined);
       })
       .catch((err) => {
         console.log("data not downloaded");
