@@ -43,6 +43,11 @@ lib
 package-lock.json
 yarn.lock
 
+# Local Testing
+test.js
+test.html
+zenbase-1.0.2.tgz
+
 others
 .DS_Store
 npm-module-boilerplate
